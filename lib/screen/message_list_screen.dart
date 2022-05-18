@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test_chatapp/model/message_model.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class MessageListScreen extends StatefulWidget {
   const MessageListScreen({Key? key}) : super(key: key);
@@ -19,20 +18,23 @@ class _MessageListScreenState extends State<MessageListScreen> {
       appBar: AppBar(title: Text('메세지 목록')),
       body: StreamBuilder<List<MessageModel>>(
         stream: streamMessages(), //중계하고 싶은 Stream을 넣는다.
-        builder: (context,asyncSnapshot) {
-          if (!asyncSnapshot.hasData) { //데이터가 없을 경우 로딩위젯을 표시한다.
+        builder: (context, asyncSnapshot) {
+          if (!asyncSnapshot.hasData) {
+            //데이터가 없을 경우 로딩위젯을 표시한다.
             return const Center(child: CircularProgressIndicator());
           } else if (asyncSnapshot.hasError) {
             return const Center(
               child: Text('오류가 발생했습니다.'),
             );
           } else {
-            List<MessageModel> messages = asyncSnapshot.data!;//비동기 데이터가 존재할 경우 리스트뷰 표시
+            List<MessageModel> messages = asyncSnapshot.data!; //비동기 데이터가 존재할 경우 리스트뷰 표시
             return ListView.builder(
                 itemCount: messages.length,
-                itemBuilder: (context,index){
-              return ListTile(title: Text(messages[index].content),);
-            });
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(messages[index].content),
+                  );
+                });
           }
         },
       ),
