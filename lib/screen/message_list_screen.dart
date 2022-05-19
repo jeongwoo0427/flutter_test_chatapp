@@ -90,7 +90,6 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
   Widget getInputWidget() {
     return Container(
-      height: 60,
       width: double.infinity,
       decoration: BoxDecoration(boxShadow: const [
         BoxShadow(color: Colors.black12, offset: Offset(0, -2), blurRadius: 3)
@@ -102,15 +101,19 @@ class _MessageListScreenState extends State<MessageListScreen> {
           children: [
             Expanded(
               child: TextField(
-                textInputAction: TextInputAction.go,
                 onSubmitted: (value){
                   _onPressedSendButton();
                  },
                 focusNode: messageFocus,
+                keyboardType: TextInputType.multiline,
+                minLines: 1,
+                maxLines: 8,
                 controller: messageController,
                 decoration: InputDecoration(
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   labelStyle: TextStyle(fontSize: 15),
-                  labelText: "내용을 입력하세요..",
+                  hintText: '내용을 입력하세요..',
                   fillColor: Colors.white,
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25.0),
@@ -218,7 +221,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
   }
 
-  void _onPressedSendButton(){
+  void _onPressedSendButton() async{
     try {
       //내용이 존재하지 않을 경우 경고메시지 표시
       if (messageController.text.trim() == '') {
@@ -226,17 +229,16 @@ class _MessageListScreenState extends State<MessageListScreen> {
         return;
 
       }
-
+      final message = messageController.text;
+      messageController.text = '';
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: messageController.text,nickname: nicknameController.text,sendDate: Timestamp.now());
-      messageController.text = '';
-
+      MessageModel messageModel = MessageModel(content: message,nickname: nicknameController.text,sendDate: Timestamp.now());
       //Firestore 인스턴스 가져오기
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       //원하는 collection 주소에 새로운 document를 Map의 형태로 추가하는 모습.
-      firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
-      messageFocus.requestFocus();
+      await firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
+
 
     }catch(ex){
       log('error)',error: ex.toString(),stackTrace: StackTrace.current);
