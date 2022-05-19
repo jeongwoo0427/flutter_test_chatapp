@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_test_chatapp/caches/preference_helper.dart';
 import 'package:flutter_test_chatapp/model/message_model.dart';
+import 'package:flutter_test_chatapp/widget/message_item_widget.dart';
 
 class MessageListScreen extends StatefulWidget {
   const MessageListScreen({Key? key}) : super(key: key);
@@ -12,13 +14,36 @@ class MessageListScreen extends StatefulWidget {
 }
 
 class _MessageListScreenState extends State<MessageListScreen> {
-  TextEditingController textController = TextEditingController();
+  TextEditingController messageController = TextEditingController();
+  TextEditingController nicknameController = TextEditingController();
   ScrollController scrollController = ScrollController();
+
+  String nickname = '';
+
+  @override
+  initState(){
+    super.initState();
+    _fetchNickanme();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('메세지 목록')),
+      backgroundColor: Color(0xFFEAEFFF),
+      appBar: AppBar(
+        title: Text('메세지 목록  (닉네임 : ${nickname == '' ? 'unknown' : nickname})'),
+        actions: [
+          MaterialButton(
+            onPressed: () {
+              _showNicknameDlg();
+            },
+            child: Text(
+              '닉네임 변경',
+              style: TextStyle(color: Colors.white),
+            ),
+          )
+        ],
+      ),
       body: StreamBuilder<List<MessageModel>>(
         stream: streamMessages(), //중계하고 싶은 Stream을 넣는다.
         builder: (context, asyncSnapshot) {
@@ -35,15 +60,20 @@ class _MessageListScreenState extends State<MessageListScreen> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
-                    child: ListView.builder(
+                    child: ListView.separated(
+                      padding: EdgeInsets.symmetric(horizontal: 10,vertical: 15),
                       reverse: true, //새로운 글은 맨 밑에서부터 시작되므로 역스크롤을 추가함
                         controller: scrollController,
                         itemCount: messages.length,
+                        separatorBuilder: (context,_){
+                          return SizedBox(height: 15,);
+                        },
                         itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(messages[index].content),
-                            subtitle: Text(messages[index].sendDate.toDate().toLocal().toString().substring(5,16)),
-                          );
+                          bool isMine = false;
+                          if(this.nickname!='' && this.nickname == messages[index].nickname){
+                            isMine = true;
+                          }
+                          return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
                         })),
                 getInputWidget()
               ],
@@ -68,7 +98,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
           children: [
             Expanded(
               child: TextField(
-                controller: textController,
+                controller: messageController,
                 decoration: InputDecoration(
                   labelStyle: TextStyle(fontSize: 15),
                   labelText: "내용을 입력하세요..",
@@ -101,7 +131,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
               shape: CircleBorder(),
               child: Padding(
                 padding: EdgeInsets.all(10),
-                child: Icon(Icons.send),
+                child: Icon(Icons.send,color: Colors.white,),
               ),
             )
           ],
@@ -110,33 +140,88 @@ class _MessageListScreenState extends State<MessageListScreen> {
     );
   }
 
+  void _showAlertDialog({required String title, required String content}){
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(title),
+            content: Text(content),
+            actions: [
+              MaterialButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('네'),
+              )
+            ],
+          );
+        });
+  }
+
+  void _showNicknameDlg() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          Size screenSize = MediaQuery.of(context).size;
+          return Dialog(
+            child: Container(
+              height: 200,
+              width: 100,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('표시할 닉네임을 입력하세요.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w700),),
+                    TextField(controller: nicknameController,decoration: InputDecoration(hintText: 'ex)근육쟁이'),),
+                    Row(children: [
+                      Expanded(child: Container(),),
+                      MaterialButton(onPressed:_onPressedEditNickname,child: Text('완료'),)
+                    ],)
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
+  void _fetchNickanme()async{
+    await Future.delayed(Duration(milliseconds: 100));
+    nickname = await PrefernceHelper().getNickname();
+    nicknameController.text = nickname;
+    if(nickname == ''){
+      _showNicknameDlg();
+    }
+    setState((){});
+  }
+
+  void _onPressedEditNickname(){
+    if(nicknameController.text.trim() == ''){
+      _showAlertDialog(title: '주의', content: '닉네임을 입력해주세요');
+      return;
+    }
+    PrefernceHelper().setNickname(nicknameController.text);
+    _fetchNickanme();
+    Navigator.pop(context);
+
+  }
+
   void _onPressedSendButton(){
     try {
       //내용이 존재하지 않을 경우 경고메시지 표시
-      if (textController.text.trim() == '') {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('주의'),
-                content: Text('내용을 입력해주세요.'),
-                actions: [
-                  MaterialButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('네'),
-                  )
-                ],
-              );
-            });
+      if (messageController.text.trim() == '') {
+        _showAlertDialog(title: '주의',content: '내용을 입력해주세요.');
         return;
       }
 
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: textController.text,sendDate: Timestamp.now());
-      textController.text = '';
+      MessageModel messageModel = MessageModel(content: messageController.text,nickname: this.nickname,sendDate: Timestamp.now());
+      messageController.text = '';
 
       //Firestore 인스턴스 가져오기
       FirebaseFirestore firestore = FirebaseFirestore.instance;
