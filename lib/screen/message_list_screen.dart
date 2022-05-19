@@ -89,7 +89,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
             ),
             SizedBox(width: 10,),
             RawMaterialButton(
-              onPressed: _onPressedSendButton,
+              onPressed: _onPressedSendButton, //전송버튼을 누를때 동작시킬 메소드
               constraints: BoxConstraints(
                 minWidth: 0,
                 minHeight: 0
@@ -110,8 +110,13 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
   void _onPressedSendButton(){
     try{
+      //서버로 보낼 데이터를 모델클래스에 담아둔다.
+      //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
       MessageModel messageModel = MessageModel(content: controller.text,sendDate: Timestamp.now());
+
+      //Firestore 인스턴스 가져오기
       FirebaseFirestore firestore = FirebaseFirestore.instance;
+      //원하는 collection 주소에 새로운 document를 Map의 형태로 추가하는 모습.
       firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
 
     }catch(ex){
@@ -122,7 +127,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
   Stream<List<MessageModel>> streamMessages(){
     try{
       //찾고자 하는 컬렉션의 스냅샷(Stream)을 가져온다.
-      final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').snapshots();
+      final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').orderBy('sendDate').snapshots();
 
       //새낭 스냅샷(Stream)내부의 자료들을 List<MessageModel> 로 변환하기 위해 map을 사용하도록 한다.
       //참고로 List.map()도 List 안의 element들을 원하는 형태로 변환하여 새로운 List로 반환한다
