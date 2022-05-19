@@ -14,11 +14,10 @@ class MessageListScreen extends StatefulWidget {
 }
 
 class _MessageListScreenState extends State<MessageListScreen> {
-  TextEditingController messageController = TextEditingController();
-  TextEditingController nicknameController = TextEditingController();
+  FocusNode messageFocus = FocusNode();
+  TextEditingController messageController = TextEditingController(text: '');
+  TextEditingController nicknameController = TextEditingController(text: '');
   ScrollController scrollController = ScrollController();
-
-  String nickname = '';
 
   @override
   initState(){
@@ -31,7 +30,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFEAEFFF),
       appBar: AppBar(
-        title: Text('메세지 목록  (닉네임 : ${nickname == '' ? 'unknown' : nickname})'),
+        title: Text('메시지'),
         actions: [
           MaterialButton(
             onPressed: () {
@@ -60,21 +59,26 @@ class _MessageListScreenState extends State<MessageListScreen> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
-                    child: ListView.separated(
-                      padding: EdgeInsets.symmetric(horizontal: 10,vertical: 15),
-                      reverse: true, //새로운 글은 맨 밑에서부터 시작되므로 역스크롤을 추가함
-                        controller: scrollController,
-                        itemCount: messages.length,
-                        separatorBuilder: (context,_){
-                          return SizedBox(height: 15,);
-                        },
-                        itemBuilder: (context, index) {
-                          bool isMine = false;
-                          if(this.nickname!='' && this.nickname == messages[index].nickname){
-                            isMine = true;
-                          }
-                          return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
-                        })),
+                    child: GestureDetector(
+                      onTap: (){
+                        messageFocus.unfocus();
+                      },
+                      child: ListView.separated(
+                        padding: EdgeInsets.symmetric(horizontal: 10,vertical: 15),
+                        reverse: true, //새로운 글은 맨 밑에서부터 시작되므로 역스크롤을 추가함
+                          controller: scrollController,
+                          itemCount: messages.length,
+                          separatorBuilder: (context,_){
+                            return SizedBox(height: 15,);
+                          },
+                          itemBuilder: (context, index) {
+                            bool isMine = false;
+                            if(nicknameController.text!='' && nicknameController.text == messages[index].nickname){
+                              isMine = true;
+                            }
+                            return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
+                          }),
+                    )),
                 getInputWidget()
               ],
             );
@@ -98,6 +102,11 @@ class _MessageListScreenState extends State<MessageListScreen> {
           children: [
             Expanded(
               child: TextField(
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value){
+                  _onPressedSendButton();
+                 },
+                focusNode: messageFocus,
                 controller: messageController,
                 decoration: InputDecoration(
                   labelStyle: TextStyle(fontSize: 15),
@@ -191,9 +200,8 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
   void _fetchNickanme()async{
     await Future.delayed(Duration(milliseconds: 100));
-    nickname = await PrefernceHelper().getNickname();
-    nicknameController.text = nickname;
-    if(nickname == ''){
+    nicknameController.text = await PrefernceHelper().getNickname();
+    if(nicknameController.text == ''){
       _showNicknameDlg();
     }
     setState((){});
@@ -216,17 +224,19 @@ class _MessageListScreenState extends State<MessageListScreen> {
       if (messageController.text.trim() == '') {
         _showAlertDialog(title: '주의',content: '내용을 입력해주세요.');
         return;
+
       }
 
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: messageController.text,nickname: this.nickname,sendDate: Timestamp.now());
+      MessageModel messageModel = MessageModel(content: messageController.text,nickname: nicknameController.text,sendDate: Timestamp.now());
       messageController.text = '';
 
       //Firestore 인스턴스 가져오기
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       //원하는 collection 주소에 새로운 document를 Map의 형태로 추가하는 모습.
       firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
+      messageFocus.requestFocus();
 
     }catch(ex){
       log('error)',error: ex.toString(),stackTrace: StackTrace.current);
