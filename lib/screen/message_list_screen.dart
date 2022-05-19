@@ -40,6 +40,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                         itemBuilder: (context, index) {
                           return ListTile(
                             title: Text(messages[index].content),
+                            subtitle: Text(messages[index].sendDate.toDate().toLocal().toString().substring(5,16)),
                           );
                         })),
                 getInputWidget()
@@ -109,7 +110,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
   void _onPressedSendButton(){
     try{
-      MessageModel messageModel = MessageModel(content: controller.text);
+      MessageModel messageModel = MessageModel(content: controller.text,sendDate: Timestamp.now());
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
 
