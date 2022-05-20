@@ -26,7 +26,6 @@ class FirestoreAccess {
       _firestoreService.streamCollection(
           collectionPath: 'chatrooms',
           builder: (docId, data) => ChatroomModel.fromMap(id: docId, map: data),
-          order: 'sendDate',
           descending: true
       );
 

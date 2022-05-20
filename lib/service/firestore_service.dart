@@ -20,9 +20,16 @@ class FirestoreService{
     await reference.delete();
   }
 
-  Stream<List<T>> streamCollection<T>({required String collectionPath, required T builder(String docId, Map<String,dynamic> data), String order = '',bool descending = false}) {
+  Stream<List<T>> streamCollection<T>({required String collectionPath, required T builder(String docId, Map<String,dynamic> data), String? order,bool descending = false}) {
     //찾고자 하는 컬렉션의 스냅샷(Strea )을 가져온다.
-    final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection(collectionPath).orderBy(order,descending: descending).snapshots();
+    final reference = FirebaseFirestore.instance.collection(collectionPath);
+    Stream<QuerySnapshot> snapshots;
+
+    if(order != null){
+      snapshots = reference.orderBy(order,descending: descending).snapshots();
+    }else{
+      snapshots = reference.snapshots();
+    }
 
     //새낭 스냅샷(Stream)내부의 자료들을 List<MessageModel> 로 변환하기 위해 map을 사용하도록 한다.
     return snapshots.map((querySnapshot){
