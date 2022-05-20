@@ -12,8 +12,7 @@ class MessageListScreen extends StatefulWidget {
 }
 
 class _MessageListScreenState extends State<MessageListScreen> {
-  TextEditingController textController = TextEditingController();
-  ScrollController scrollController = ScrollController();
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -31,13 +30,12 @@ class _MessageListScreenState extends State<MessageListScreen> {
             );
           } else {
             List<MessageModel> messages = asyncSnapshot.data!; //비동기 데이터가 존재할 경우 리스트뷰 표시
-            return Column( 
+            return Column(
               mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
                     child: ListView.builder(
-                      reverse: true, //새로운 글은 맨 밑에서부터 시작되므로 역스크롤을 추가함
-                        controller: scrollController,
+                        // 상위 위젯의 크기를 기준으로 잡는게 아닌 자식위젯의 크기를 기준으로 잡음
                         itemCount: messages.length,
                         itemBuilder: (context, index) {
                           return ListTile(
@@ -68,7 +66,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
           children: [
             Expanded(
               child: TextField(
-                controller: textController,
+                controller: controller,
                 decoration: InputDecoration(
                   labelStyle: TextStyle(fontSize: 15),
                   labelText: "내용을 입력하세요..",
@@ -111,32 +109,10 @@ class _MessageListScreenState extends State<MessageListScreen> {
   }
 
   void _onPressedSendButton(){
-    try {
-      //내용이 존재하지 않을 경우 경고메시지 표시
-      if (textController.text.trim() == '') {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('주의'),
-                content: Text('내용을 입력해주세요.'),
-                actions: [
-                  MaterialButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('네'),
-                  )
-                ],
-              );
-            });
-        return;
-      }
-
+    try{
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: textController.text,sendDate: Timestamp.now());
-      textController.text = '';
+      MessageModel messageModel = MessageModel(content: controller.text,sendDate: Timestamp.now());
 
       //Firestore 인스턴스 가져오기
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -151,7 +127,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
   Stream<List<MessageModel>> streamMessages(){
     try{
       //찾고자 하는 컬렉션의 스냅샷(Stream)을 가져온다.
-      final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').orderBy('sendDate',descending: true).snapshots();
+      final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').orderBy('sendDate').snapshots();
 
       //새낭 스냅샷(Stream)내부의 자료들을 List<MessageModel> 로 변환하기 위해 map을 사용하도록 한다.
       //참고로 List.map()도 List 안의 element들을 원하는 형태로 변환하여 새로운 List로 반환한다
