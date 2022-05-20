@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void startLogin() {
-    Future.delayed(Duration(milliseconds: 500), () async {
+    Future.delayed(Duration(milliseconds: 1500), () async {
       Navigator.of(context, rootNavigator: true)
           .pushReplacementNamed(Routes.chatroomList);
     });
@@ -30,7 +30,20 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(child: Text('IZ Talk',style: TextStyle(fontSize: 45,fontWeight: FontWeight.w700,color: Theme.of(context).primaryColor),)),
+      body: Center(
+          child:  Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+            Image.asset('assets/images/izcharacter.jpg',fit: BoxFit.fitWidth,width: 100,isAntiAlias: true,),
+            SizedBox(width: 10,),
+            Text(
+              'IZ Talk',
+              style: TextStyle(
+                  fontSize: 45,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).primaryColor),
+            )
+          ],)),
     );
   }
 }
