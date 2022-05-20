@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MessageListScreen(),
+      home: MessageListScreen(chatDocId: '3df091j2jdf9102980',),
     );
   }
 }

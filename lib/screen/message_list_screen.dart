@@ -2,12 +2,16 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_test_chatapp/caches/preference_helper.dart';
 import 'package:flutter_test_chatapp/model/message_model.dart';
+import 'package:flutter_test_chatapp/service/firestore_access.dart';
 import 'package:flutter_test_chatapp/widget/message_item_widget.dart';
 
+import '../cache/preference_helper.dart';
+
 class MessageListScreen extends StatefulWidget {
-  const MessageListScreen({Key? key}) : super(key: key);
+  final String chatDocId;
+
+  MessageListScreen({required this.chatDocId});
 
   @override
   State<MessageListScreen> createState() => _MessageListScreenState();
@@ -44,7 +48,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
         ],
       ),
       body: StreamBuilder<List<MessageModel>>(
-        stream: streamMessages(), //중계하고 싶은 Stream을 넣는다.
+        stream: FirestoreAccess().streamMessage(widget.chatDocId), //중계하고 싶은 Stream을 넣는다.
         builder: (context, asyncSnapshot) {
           if (!asyncSnapshot.hasData) {
             //데이터가 없을 경우 로딩위젯을 표시한다.
@@ -230,44 +234,18 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
       }
       final message = messageController.text;
+      final nickname = nicknameController.text;
       messageController.text = '';
+
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: message,nickname: nicknameController.text,sendDate: Timestamp.now());
-      //Firestore 인스턴스 가져오기
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      //원하는 collection 주소에 새로운 document를 Map의 형태로 추가하는 모습.
-      await firestore.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').add(messageModel.toMap());
-
+      MessageModel messageModel = MessageModel(content: message,nickname: nickname,sendDate: Timestamp.now());
+      FirestoreAccess().addMessage(chatId: widget.chatDocId, messageModel: messageModel);
 
     }catch(ex){
       log('error)',error: ex.toString(),stackTrace: StackTrace.current);
     }
   }
 
-  Stream<List<MessageModel>> streamMessages(){
-    try{
-      //찾고자 하는 컬렉션의 스냅샷(Stream)을 가져온다.
-      final Stream<QuerySnapshot> snapshots = FirebaseFirestore.instance.collection('chatrooms/YLCoRBj59XRsDdav2YV1/messages').orderBy('sendDate',descending: true).snapshots();
 
-      //새낭 스냅샷(Stream)내부의 자료들을 List<MessageModel> 로 변환하기 위해 map을 사용하도록 한다.
-      //참고로 List.map()도 List 안의 element들을 원하는 형태로 변환하여 새로운 List로 반환한다
-      return snapshots.map((querySnapshot){
-        List<MessageModel> messages = [];//querySnapshot을 message로 옮기기 위해 List<MessageModel> 선언
-        querySnapshot.docs.forEach((element) { //해당 컬렉션에 존재하는 모든 docs를 순회하며 messages 에 데이터를 추가한다.
-          messages.add(
-              MessageModel.fromMap(
-                  id:element.id,
-                  map:element.data() as Map<String, dynamic>
-              )
-          );
-        });
-        return messages; //QuerySnapshot에서 List<MessageModel> 로 변경이 됐으니 반환
-      }); //Stream<QuerySnapshot> 에서 Stream<List<MessageModel>>로 변경되어 반환됨
-
-    }catch(ex){//오류 발생 처리
-      log('error)',error: ex.toString(),stackTrace: StackTrace.current);
-      return Stream.error(ex.toString());
-    }
-  }
 }
