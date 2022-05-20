@@ -29,5 +29,8 @@ class FirestoreAccess {
           descending: true
       );
 
+  Future<void> addChatroom({required ChatroomModel chatroomModel}) =>
+      _firestoreService.add(collectionPath: 'chatrooms', data: chatroomModel.toMap());
+
 
 }

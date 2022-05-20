@@ -6,14 +6,15 @@ import 'package:flutter_test_chatapp/model/message_model.dart';
 import 'package:flutter_test_chatapp/service/firestore_access.dart';
 import 'package:flutter_test_chatapp/widget/message_item_widget.dart';
 
-import '../cache/preference_helper.dart';
-import '../mixin/dialog_mixin.dart';
+import '../../cache/preference_helper.dart';
+import '../../mixin/dialog_mixin.dart';
+import '../../model/chatroom_model.dart';
 
 class MessageListScreen extends StatefulWidget {
   static const String ROUTE_NAME = '/message_list_screen';
-  final String chatDocId;
+  final ChatroomModel chatroomModel;
 
-  MessageListScreen({required this.chatDocId});
+  MessageListScreen({required this.chatroomModel});
 
   @override
   State<MessageListScreen> createState() => _MessageListScreenState();
@@ -36,10 +37,10 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
     return Scaffold(
       backgroundColor: Color(0xFFEAEFFF),
       appBar: AppBar(
-        title: Text('메시지'),
+        title: Text(widget.chatroomModel.name),
       ),
       body: StreamBuilder<List<MessageModel>>(
-        stream: FirestoreAccess().streamMessages(widget.chatDocId), //중계하고 싶은 Stream을 넣는다.
+        stream: FirestoreAccess().streamMessages(widget.chatroomModel.id), //중계하고 싶은 Stream을 넣는다.
         builder: (context, asyncSnapshot) {
           if (!asyncSnapshot.hasData) {
             //데이터가 없을 경우 로딩위젯을 표시한다.
@@ -171,7 +172,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
       MessageModel messageModel = MessageModel(content: message,nickname: nickname,sendDate: Timestamp.now());
-      FirestoreAccess().addMessage(chatId: widget.chatDocId, messageModel: messageModel);
+      FirestoreAccess().addMessage(chatId: widget.chatroomModel.id, messageModel: messageModel);
 
     }catch(ex){
       log('error)',error: ex.toString(),stackTrace: StackTrace.current);

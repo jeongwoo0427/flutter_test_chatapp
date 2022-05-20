@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test_chatapp/routes.dart';
-import 'package:flutter_test_chatapp/screen/chatroom_list_screen.dart';
-import 'package:flutter_test_chatapp/screen/message_list_screen.dart';
+import 'package:flutter_test_chatapp/screen/chat/message_list_screen.dart';
 import 'package:flutter_test_chatapp/screen/splash_screen.dart';
 import 'package:flutter_test_chatapp/screen/unkown_screen.dart';
 
@@ -27,7 +26,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
         onGenerateRoute:(settings) {
-          return getRoutes(context, settings: settings);
+          return Routes().getRoutes(context, settings: settings);
         } ,
       home: SplashScreen()
     );
