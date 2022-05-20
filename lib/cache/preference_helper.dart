@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class PrefernceHelper{
+class PreferenceHelper{
 
   Future<String> getNickname() async{
     final pref = await SharedPreferences.getInstance();

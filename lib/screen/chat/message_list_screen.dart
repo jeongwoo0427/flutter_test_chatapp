@@ -69,7 +69,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
                           },
                           itemBuilder: (context, index) {
                             bool isMine = false;
-                            if(nickname=='' && nickname == messages[index].nickname){
+                            if(nickname!='' && nickname == messages[index].nickname){
                               isMine = true;
                             }
                             return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
@@ -151,8 +151,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
 
   void _fetchNickanme()async{
     await Future.delayed(Duration(milliseconds: 100));
-    nickname = await PrefernceHelper().getNickname();
-
+    nickname = await PreferenceHelper().getNickname();
     setState((){});
   }
 

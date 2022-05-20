@@ -21,6 +21,12 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
     with DialogMixin {
   TextEditingController nicknameController = TextEditingController(text: '');
 
+  @override
+  initState(){
+    super.initState();
+    _checkNickname();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +41,7 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
         title: Text('IZ Talk'),
         actions: [
           MaterialButton(
-            onPressed: _showNicknameDlg,
+            onPressed: _onPressedChangeNickname,
             child: Text(
               '닉네임 변경',
               style: TextStyle(color: Colors.white),
@@ -81,11 +87,7 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
     List<Widget> widgets = [];
     chatrooms.forEach((element) {
       widgets.add(FrontContainerWidget(
-          onTap: () {
-
-            Navigator.pushNamed(context, Routes.messageList,
-                arguments: element);
-          },
+          onTap: (){_onPressedRoomItem(element);},
           child: Padding(
             padding: EdgeInsets.only(left: 15, top: 15, bottom: 15, right: 40),
             child: Row(
@@ -97,48 +99,37 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
     return widgets;
   }
 
-  void _showNicknameDlg() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          Size screenSize = MediaQuery.of(context).size;
-          return Dialog(
-            child: Container(
-              height: 200,
-              width: 100,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '표시할 닉네임을 입력하세요.',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                    TextField(
-                      controller: nicknameController,
-                      decoration: InputDecoration(hintText: 'ex)근육쟁이'),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(),
-                        ),
-                        MaterialButton(
-                          onPressed: _onPressedEditNickname,
-                          child: Text('완료'),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
+  void _checkNickname() async{
+    String nickname =await PreferenceHelper().getNickname();
+   if(nickname ==''){
+     final result = await showTextDialog(context, title: '사용하실 닉네임을 적어주세요', hintText: 'ex)몸짱맨');
+     if(result != null) {
+       PreferenceHelper().setNickname(result.toString());
+     }
+   }
+  }
+
+  void _onPressedChangeNickname() async{
+    final result = await showTextDialog(context, title: '표시할 닉네임을 입력하세요', hintText: 'ex)근육쟁이',initialText:await PreferenceHelper().getNickname());
+    if(result !=null){
+      PreferenceHelper().setNickname(result.toString());
+    }
+  }
+
+  void _onPressedRoomItem(ChatroomModel roomModel) async{
+
+    if(roomModel.password.trim() != ''){
+      final result = await showTextDialog(context, title: '패스워드', hintText: '');
+      if(result.toString() == roomModel.password){
+        Navigator.pushNamed(context, Routes.messageList,
+            arguments: roomModel);
+      }else if(result != null){
+        showAlertDialog(context, title: '패스워드 오류', content: '패스워드가 다릅니다.');
+      }
+    }else{
+      Navigator.pushNamed(context, Routes.messageList,
+          arguments: roomModel);
+    }
   }
 
   void _onPressedNewRoom() async {
@@ -204,12 +195,4 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
   }
 
 
-  void _onPressedEditNickname() {
-    if (nicknameController.text.trim() == '') {
-      showAlertDialog(context, title: '주의', content: '닉네임을 입력해주세요');
-      return;
-    }
-    PrefernceHelper().setNickname(nicknameController.text);
-    Navigator.pop(context);
-  }
 }

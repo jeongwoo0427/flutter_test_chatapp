@@ -23,6 +23,57 @@ mixin DialogMixin{
         });
   }
 
+  Future<dynamic> showTextDialog(BuildContext context,{required String title,required String hintText,String initialText =''})async{
+    TextEditingController textController = TextEditingController(text: initialText);
+
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          Size screenSize = MediaQuery.of(context).size;
+          return Dialog(
+            child: Container(
+              height: 200,
+              width: 100,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                    TextField(
+                      controller: textController,
+                      decoration: InputDecoration(hintText: hintText),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(),
+                        ),
+                        MaterialButton(
+                          onPressed: (){
+                            if (textController.text.trim() == '') {
+                              showAlertDialog(context, title: '주의', content: '최소 1글자 이상입니다.');
+                              return;
+                            }
+                            Navigator.pop(context,textController.text);},
+                          child: Text('완료'),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
   Future<dynamic> showCardDialog(
       BuildContext context, {
         double? height = 800,
