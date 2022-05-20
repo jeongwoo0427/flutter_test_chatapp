@@ -7,8 +7,10 @@ import 'package:flutter_test_chatapp/service/firestore_access.dart';
 import 'package:flutter_test_chatapp/widget/message_item_widget.dart';
 
 import '../cache/preference_helper.dart';
+import '../mixin/dialog_mixin.dart';
 
 class MessageListScreen extends StatefulWidget {
+  static const String ROUTE_NAME = '/message_list_screen';
   final String chatDocId;
 
   MessageListScreen({required this.chatDocId});
@@ -17,11 +19,11 @@ class MessageListScreen extends StatefulWidget {
   State<MessageListScreen> createState() => _MessageListScreenState();
 }
 
-class _MessageListScreenState extends State<MessageListScreen> {
+class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
   FocusNode messageFocus = FocusNode();
   TextEditingController messageController = TextEditingController(text: '');
-  TextEditingController nicknameController = TextEditingController(text: '');
   ScrollController scrollController = ScrollController();
+  String nickname = '';
 
   @override
   initState(){
@@ -35,20 +37,9 @@ class _MessageListScreenState extends State<MessageListScreen> {
       backgroundColor: Color(0xFFEAEFFF),
       appBar: AppBar(
         title: Text('메시지'),
-        actions: [
-          MaterialButton(
-            onPressed: () {
-              _showNicknameDlg();
-            },
-            child: Text(
-              '닉네임 변경',
-              style: TextStyle(color: Colors.white),
-            ),
-          )
-        ],
       ),
       body: StreamBuilder<List<MessageModel>>(
-        stream: FirestoreAccess().streamMessage(widget.chatDocId), //중계하고 싶은 Stream을 넣는다.
+        stream: FirestoreAccess().streamMessages(widget.chatDocId), //중계하고 싶은 Stream을 넣는다.
         builder: (context, asyncSnapshot) {
           if (!asyncSnapshot.hasData) {
             //데이터가 없을 경우 로딩위젯을 표시한다.
@@ -77,7 +68,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                           },
                           itemBuilder: (context, index) {
                             bool isMine = false;
-                            if(nicknameController.text!='' && nicknameController.text == messages[index].nickname){
+                            if(nickname=='' && nickname == messages[index].nickname){
                               isMine = true;
                             }
                             return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
@@ -156,85 +147,25 @@ class _MessageListScreenState extends State<MessageListScreen> {
     );
   }
 
-  void _showAlertDialog({required String title, required String content}){
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(title),
-            content: Text(content),
-            actions: [
-              MaterialButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('네'),
-              )
-            ],
-          );
-        });
-  }
-
-  void _showNicknameDlg() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          Size screenSize = MediaQuery.of(context).size;
-          return Dialog(
-            child: Container(
-              height: 200,
-              width: 100,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('표시할 닉네임을 입력하세요.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w700),),
-                    TextField(controller: nicknameController,decoration: InputDecoration(hintText: 'ex)근육쟁이'),),
-                    Row(children: [
-                      Expanded(child: Container(),),
-                      MaterialButton(onPressed:_onPressedEditNickname,child: Text('완료'),)
-                    ],)
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
-  }
 
   void _fetchNickanme()async{
     await Future.delayed(Duration(milliseconds: 100));
-    nicknameController.text = await PrefernceHelper().getNickname();
-    if(nicknameController.text == ''){
-      _showNicknameDlg();
-    }
+    nickname = await PrefernceHelper().getNickname();
+
     setState((){});
   }
 
-  void _onPressedEditNickname(){
-    if(nicknameController.text.trim() == ''){
-      _showAlertDialog(title: '주의', content: '닉네임을 입력해주세요');
-      return;
-    }
-    PrefernceHelper().setNickname(nicknameController.text);
-    _fetchNickanme();
-    Navigator.pop(context);
 
-  }
 
   void _onPressedSendButton() async{
     try {
       //내용이 존재하지 않을 경우 경고메시지 표시
       if (messageController.text.trim() == '') {
-        _showAlertDialog(title: '주의',content: '내용을 입력해주세요.');
+        showAlertDialog(context,title: '주의',content: '내용을 입력해주세요.');
         return;
 
       }
       final message = messageController.text;
-      final nickname = nicknameController.text;
       messageController.text = '';
 
       //서버로 보낼 데이터를 모델클래스에 담아둔다.

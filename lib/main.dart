@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_test_chatapp/routes.dart';
+import 'package:flutter_test_chatapp/screen/chatroom_list_screen.dart';
 import 'package:flutter_test_chatapp/screen/message_list_screen.dart';
+import 'package:flutter_test_chatapp/screen/splash_screen.dart';
+import 'package:flutter_test_chatapp/screen/unkown_screen.dart';
 
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,11 +22,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Veiz Chat',
+      title: 'IZ Talk',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MessageListScreen(chatDocId: '3df091j2jdf9102980',),
+        onGenerateRoute:(settings) {
+          return getRoutes(context, settings: settings);
+        } ,
+      home: SplashScreen()
     );
   }
 }
