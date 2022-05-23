@@ -90,10 +90,16 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
           onTap: (){_onPressedRoomItem(element);},
           child: Padding(
             padding: EdgeInsets.only(left: 15, top: 15, bottom: 15, right: 40),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [element.password!=''?Icon(Icons.lock,size: 16,):Container(), Text(element.name)],
-            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [element.password!=''?Icon(Icons.lock,size: 16,):Container(), Text(element.name)],
+              ),
+              SizedBox(height: 10,),
+              Text(element.recentMessage,style: TextStyle(color: Colors.grey),)
+            ],)
           )));
     });
     return widgets;

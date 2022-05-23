@@ -7,11 +7,16 @@ class FirestoreService{
   FirestoreService._();
   static final instance = FirestoreService._();
 
-
   Future<void> add({required String collectionPath, required Map<String,dynamic> data})async{
     final reference = FirebaseFirestore.instance.collection(collectionPath);
     log('FirestoreService_add : $collectionPath : $data');
     await reference.add(data);
+  }
+
+  Future<void> updae({required String collectionPath,required String docId, required Map<String,dynamic> data}) async{
+    final reference = FirebaseFirestore.instance.collection(collectionPath).doc(docId);
+    log('FirebaseService_update : $collectionPath : $data');
+    await reference.update(data);
   }
 
   Future<void> delete({required String collectionPath, required String docId}) async{
