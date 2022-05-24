@@ -12,4 +12,9 @@ class PreferenceHelper{
     pref.setString('nickname',nickname);
   }
 
+  Future setEmail(String email) async{
+    final pref = await SharedPreferences.getInstance();
+    pref.setString('email', email);
+  }
+
 }

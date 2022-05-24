@@ -6,7 +6,7 @@ import 'package:flutter_test_chatapp/widget/front_container_widget.dart';
 
 import '../../cache/preference_helper.dart';
 import '../../routes.dart';
-import '../../service/firestore_access.dart';
+import '../../service/firestore_data.dart';
 
 class ChatroomListScreen extends StatefulWidget {
   static const String ROUTE_NAME = '/chatroom_list_screen';
@@ -50,7 +50,7 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
         ],
       ),
       body: StreamBuilder<List<ChatroomModel>>(
-        stream: FirestoreAccess().streamChatrooms(), //중계하고 싶은 Stream을 넣는다.
+        stream: FirestoreData().streamChatrooms(), //중계하고 싶은 Stream을 넣는다.
         builder: (context, asyncSnapshot) {
           //return Container();
           if (!asyncSnapshot.hasData) {
@@ -196,7 +196,7 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
         name: roomNameController.text,
         password: isUsePassword?passwordController.text:'',
       );
-      FirestoreAccess().addChatroom(chatroomModel: chatroomModel);
+      FirestoreData().addChatroom(chatroomModel: chatroomModel);
     }
   }
 

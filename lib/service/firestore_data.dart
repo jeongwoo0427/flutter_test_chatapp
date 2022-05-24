@@ -3,7 +3,7 @@ import 'package:flutter_test_chatapp/model/chatroom_model.dart';
 import '../model/message_model.dart';
 import 'firestore_service.dart';
 
-class FirestoreAccess {
+class FirestoreData {
   final _firestoreService = FirestoreService.instance;
 
   Stream<List<MessageModel>> streamMessages(String chatId) =>
