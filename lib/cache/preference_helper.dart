@@ -2,19 +2,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferenceHelper{
 
-  Future<String> getNickname() async{
-    final pref = await SharedPreferences.getInstance();
-    return pref.getString('nickname')??'';
-  }
 
-  Future setNickname(String nickname) async {
+  Future<bool> getIsFirstStart() async{
     final pref = await SharedPreferences.getInstance();
-    pref.setString('nickname',nickname);
+    return pref.getBool('isFirst') ?? true;
   }
-
-  Future setEmail(String email) async{
+  Future setIsFirstStart(bool isFirst) async{
     final pref = await SharedPreferences.getInstance();
-    pref.setString('email', email);
+    return pref.setBool('isFirst', isFirst);
   }
 
 }

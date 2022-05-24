@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test_chatapp/mixin/dialog_mixin.dart';
 import 'package:flutter_test_chatapp/model/chatroom_model.dart';
 import 'package:flutter_test_chatapp/screen/chat/message_list_screen.dart';
+import 'package:flutter_test_chatapp/state/user_state.dart';
 import 'package:flutter_test_chatapp/widget/front_container_widget.dart';
+import 'package:provider/provider.dart';
 
 import '../../cache/preference_helper.dart';
 import '../../routes.dart';
@@ -24,7 +28,6 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
   @override
   initState(){
     super.initState();
-    _checkNickname();
   }
 
 
@@ -105,20 +108,13 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
     return widgets;
   }
 
-  void _checkNickname() async{
-    String nickname =await PreferenceHelper().getNickname();
-   if(nickname ==''){
-     final result = await showTextDialog(context, title: '사용하실 닉네임을 적어주세요', hintText: 'ex)몸짱맨');
-     if(result != null) {
-       PreferenceHelper().setNickname(result.toString());
-     }
-   }
-  }
+
 
   void _onPressedChangeNickname() async{
-    final result = await showTextDialog(context, title: '표시할 닉네임을 입력하세요', hintText: 'ex)근육쟁이',initialText:await PreferenceHelper().getNickname());
+    final UserState userState = Provider.of<UserState>(context,listen: false);
+    final result = await showTextDialog(context, title: '표시할 닉네임을 입력하세요', hintText: 'ex)근육쟁이',initialText:userState.getUser()!.displayName??'');
     if(result !=null){
-      PreferenceHelper().setNickname(result.toString());
+      userState.updateNickname(result.toString());
     }
   }
 

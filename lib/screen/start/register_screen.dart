@@ -8,17 +8,18 @@ import 'package:provider/provider.dart';
 
 import '../../routes.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogMixin{
+class _RegisterScreenState extends State<RegisterScreen> with ValidatorMinxin ,DialogMixin{
 
   String email = '';
   String password = '';
+  String password2 = '';
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
         body: Center(
       child: FrontContainerWidget(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        height: 430,
+        height: 530,
         width: 330,
         child: Form(
           key: validationKey,
@@ -37,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'LOGIN',
+                'Register',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               SizedBox(
@@ -49,25 +50,39 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
                 validator: emailValidation,
               ),
               SizedBox(
-                height: 30,
+                height: 10,
               ),
               RoundedInputWidget(
                 labelText: '패스워드',
                 onChanged: (value){password = value;},
                 validator: passwordValidation,
               ),
+              RoundedInputWidget(
+                labelText: '패스워드 확인',
+                onChanged: (value){password2 = value;},
+                validator: (value){
+                  if(value.toString().trim() ==''){
+                    return '확인 패스워드를 입력해주세요.';
+                  }
+
+                  if(value.toString() != password){
+                    return '확인 비밀번호가 다릅니다.';
+                  }
+
+                },
+              ),
               SizedBox(
                 height: 50,
               ),
               FrontContainerWidget(
-                  onTap: _onTapLoginButton,
+                  onTap: _onTapRegisterButton,
                   width: 100,
                   height: 40,
                   child: Center(
-                    child: Text('로그인'),
+                    child: Text('회원가입'),
                   )),
               SizedBox(height: 10,),
-              MaterialButton(onPressed: _onTapRegisterButton,child: Text('회원가입'),)
+              MaterialButton(onPressed: _onTapLogin,child: Text('로그인으로'),)
             ],
           ),
         ),
@@ -75,23 +90,23 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
     ));
   }
 
-  void _onTapLoginButton() async{
+  void _onTapRegisterButton() async{
     if (!checkValidate()) return;
 
-    final result = await Provider.of<UserState>(context,listen: false).signInWithEmail(email,password);
+    final result = await Provider.of<UserState>(context,listen: false).registerWithEmail(email,password);
 
 
     if(result == 'success'){
       showAlertDialog(context, title: '로그인 성공', content:'정상적으로 로그인 되었습니다.');
+      Navigator.pop(context,true);
     }else{
       showAlertDialog(context, title: '로그인 오류', content: result.toString());
     }
   }
-  void _onTapRegisterButton() async{
-    final result = await Navigator.of(context).pushNamed(Routes.register);
 
-    if(result == true){
-      Navigator.pop(context);
-    }
+  void _onTapLogin()async{
+    Navigator.pop(context);
   }
+
+
 }

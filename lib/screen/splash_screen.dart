@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_test_chatapp/cache/preference_helper.dart';
 import 'package:flutter_test_chatapp/state/user_state.dart';
 import 'package:provider/provider.dart';
 
@@ -25,10 +28,14 @@ class _SplashScreenState extends State<SplashScreen> {
   void startLogin() {
     Future.delayed(Duration(milliseconds: 1500), () async {
 
-      await Provider.of<UserState>(context,listen: false).signInAnonymously();
+      UserState userState = Provider.of<UserState>(context,listen: false);
+
+      await userState.prepareUser();
+      User user = userState.getUser()!;
+      log('isAnony=${user.isAnonymous.toString()} email=${user.email} uid=${user.uid} displayName=${user.displayName}');
 
       Navigator.of(context, rootNavigator: true)
-          .pushReplacementNamed(Routes.login);
+          .pushReplacementNamed(Routes.chatroomList);
     });
   }
 

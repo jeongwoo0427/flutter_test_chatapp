@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test_chatapp/model/message_model.dart';
 import 'package:flutter_test_chatapp/service/firestore_data.dart';
+import 'package:flutter_test_chatapp/state/user_state.dart';
 import 'package:flutter_test_chatapp/widget/message_item_widget.dart';
+import 'package:provider/provider.dart';
 
 import '../../cache/preference_helper.dart';
 import '../../mixin/dialog_mixin.dart';
@@ -24,16 +26,15 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
   FocusNode messageFocus = FocusNode();
   TextEditingController messageController = TextEditingController(text: '');
   ScrollController scrollController = ScrollController();
-  String nickname = '';
 
   @override
   initState(){
     super.initState();
-    _fetchNickanme();
   }
 
   @override
   Widget build(BuildContext context) {
+    final UserState userState = Provider.of<UserState>(context,listen: true);
     return Scaffold(
       backgroundColor: Color(0xFFEAEFFF),
       appBar: AppBar(
@@ -69,9 +70,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
                           },
                           itemBuilder: (context, index) {
                             bool isMine = false;
-                            if(nickname!='' && nickname == messages[index].nickname){
-                              isMine = true;
-                            }
+
                             return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
                           }),
                     )),
@@ -148,17 +147,9 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
     );
   }
 
-
-  void _fetchNickanme()async{
-    await Future.delayed(Duration(milliseconds: 100));
-    nickname = await PreferenceHelper().getNickname();
-    setState((){});
-  }
-
-
-
   void _onPressedSendButton() async{
     try {
+      final UserState userState = Provider.of<UserState>(context,listen: false);
       //내용이 존재하지 않을 경우 경고메시지 표시
       if (messageController.text.trim() == '') {
         showAlertDialog(context,title: '주의',content: '내용을 입력해주세요.');
@@ -170,7 +161,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
 
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: message,nickname: nickname,sendDate: Timestamp.now());
+      MessageModel messageModel = MessageModel(content: message,nickname: userState.getUser()!.displayName??'unkown',sendDate: Timestamp.now());
       widget.chatroomModel.recentMessage = message;
       FirestoreData().addMessage(chatId: widget.chatroomModel.id, messageModel: messageModel);
       FirestoreData().updateChatroom(chatroomModel: widget.chatroomModel);
