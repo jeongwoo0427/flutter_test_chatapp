@@ -7,7 +7,6 @@ import 'package:flutter_test_chatapp/cache/preference_helper.dart';
 class UserState extends ChangeNotifier{
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  User? _user;
 
   Future<void> prepareUser() async{
     bool isFirst = await PreferenceHelper().getIsFirstStart();
@@ -20,7 +19,7 @@ class UserState extends ChangeNotifier{
     }
 
     await PreferenceHelper().setIsFirstStart(false);
-    setUser(_auth.currentUser);
+    notifyListeners();
     //앱 재설치시 signOut 해주기
   }
 
@@ -29,8 +28,13 @@ class UserState extends ChangeNotifier{
       AuthCredential authCredential = EmailAuthProvider.credential(email: email, password: password);
       await _auth.currentUser!.linkWithCredential(authCredential);
       print('link complete');
+      notifyListeners();
       return 'success';
     }on FirebaseAuthException catch (e){
+      if(e.code == 'provider-already-linked'){
+        return '이미 존재하는 계정입니다.';
+      }
+
       return e.toString();
     }catch(e){
       return e.toString();
@@ -44,7 +48,7 @@ class UserState extends ChangeNotifier{
       // print('link complete');
       final UserCredential credential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      setUser(credential.user);
+      notifyListeners();
       return 'success';
 
     } on FirebaseAuthException catch (e) {
@@ -64,17 +68,13 @@ class UserState extends ChangeNotifier{
   }
 
   Future<void> updateNickname(String name)async{
-    await _user!.updateDisplayName(name);
+    await _auth.currentUser!.updateDisplayName(name);
     print('updated Username ${name}');
     notifyListeners();
   }
 
-  void setUser(User? user){
-    _user = user;
-    notifyListeners();
-  }
 
-  User? getUser() {
-    return _user;
+  User getUser() {
+    return _auth.currentUser!;
   }
 }

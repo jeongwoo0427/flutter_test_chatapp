@@ -70,6 +70,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
                           },
                           itemBuilder: (context, index) {
                             bool isMine = false;
+                            if(userState.getUser().uid == messages[index].uid){isMine = true;}
 
                             return MessageItemWidget(isMine: isMine,messageModel:messages[index]);
                           }),
@@ -161,7 +162,7 @@ class _MessageListScreenState extends State<MessageListScreen> with DialogMixin{
 
       //서버로 보낼 데이터를 모델클래스에 담아둔다.
       //여기서 sendDate에 Timestamp.now()가 들어가는데 이는 디바이스의 시간을 나타내므로 나중에는 서버의 시간을 넣는 방법으로 변경하도록 하자.
-      MessageModel messageModel = MessageModel(content: message,nickname: userState.getUser()!.displayName??'unkown',sendDate: Timestamp.now());
+      MessageModel messageModel = MessageModel(content: message,uid: userState.getUser().uid,nickname: userState.getUser().displayName??'',sendDate: Timestamp.now());
       widget.chatroomModel.recentMessage = message;
       FirestoreData().addMessage(chatId: widget.chatroomModel.id, messageModel: messageModel);
       FirestoreData().updateChatroom(chatroomModel: widget.chatroomModel);

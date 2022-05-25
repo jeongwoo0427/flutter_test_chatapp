@@ -44,9 +44,9 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
         title: Text('IZ Talk'),
         actions: [
           MaterialButton(
-            onPressed: _onPressedChangeNickname,
+            onPressed: _onPressedProfile,
             child: Text(
-              '닉네임 변경',
+              '프로필',
               style: TextStyle(color: Colors.white),
             ),
           )
@@ -110,12 +110,13 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
 
 
 
-  void _onPressedChangeNickname() async{
-    final UserState userState = Provider.of<UserState>(context,listen: false);
-    final result = await showTextDialog(context, title: '표시할 닉네임을 입력하세요', hintText: 'ex)근육쟁이',initialText:userState.getUser()!.displayName??'');
-    if(result !=null){
-      userState.updateNickname(result.toString());
-    }
+  void _onPressedProfile() async{
+    // final UserState userState = Provider.of<UserState>(context,listen: false);
+    // final result = await showTextDialog(context, title: '표시할 닉네임을 입력하세요', hintText: 'ex)근육쟁이',initialText:userState.getUser().displayName??'');
+    // if(result !=null){
+    //   userState.updateNickname(result.toString());
+    // }
+    Navigator.pushNamed(context, Routes.profile);
   }
 
   void _onPressedRoomItem(ChatroomModel roomModel) async{

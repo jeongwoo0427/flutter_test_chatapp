@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test_chatapp/mixin/dialog_mixin.dart';
 import 'package:flutter_test_chatapp/mixin/validator_mixin.dart';
 import 'package:flutter_test_chatapp/state/user_state.dart';
+import 'package:flutter_test_chatapp/widget/appbar/default_appbar_widget.dart';
 import 'package:flutter_test_chatapp/widget/front_container_widget.dart';
 import 'package:flutter_test_chatapp/widget/input/rounded_input_widget.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return Scaffold(
+      appBar: getDefaultAppbar(titleText: '로그인'),
         body: Center(
       child: FrontContainerWidget(
         padding: EdgeInsets.symmetric(horizontal: 20),

@@ -95,9 +95,8 @@ class _RegisterScreenState extends State<RegisterScreen> with ValidatorMinxin ,D
 
     final result = await Provider.of<UserState>(context,listen: false).registerWithEmail(email,password);
 
-
     if(result == 'success'){
-      showAlertDialog(context, title: '로그인 성공', content:'정상적으로 로그인 되었습니다.');
+      await showAlertDialog(context, title: '회원가입 성공', content:'정상적으로 로그인 되었습니다.');
       Navigator.pop(context,true);
     }else{
       showAlertDialog(context, title: '로그인 오류', content: result.toString());

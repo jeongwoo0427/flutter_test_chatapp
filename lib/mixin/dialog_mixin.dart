@@ -23,7 +23,7 @@ mixin DialogMixin{
         });
   }
 
-  Future<dynamic> showTextDialog(BuildContext context,{required String title,required String hintText,String initialText =''})async{
+  Future<dynamic> showTextDialog(BuildContext context,{required String title,required String hintText,String initialText ='',int? maxLength})async{
     TextEditingController textController = TextEditingController(text: initialText);
 
     return await showDialog(
@@ -47,6 +47,7 @@ mixin DialogMixin{
                       TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                     TextField(
+                      maxLength: maxLength,
                       controller: textController,
                       decoration: InputDecoration(hintText: hintText),
                     ),

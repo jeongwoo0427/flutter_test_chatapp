@@ -4,12 +4,14 @@ class MessageModel {
   final String id; //해당 도큐먼트의 ID를 담기위함.
   final String content;
   final String nickname;
+  final String uid;
   final Timestamp sendDate;
 
   MessageModel({
     this.id = '',
     this.content = '',
     this.nickname = '',
+    this.uid = '',
     Timestamp? sendDate,
   }):sendDate = sendDate??Timestamp(0, 0);
 
@@ -19,6 +21,7 @@ class MessageModel {
       id: id,
       content: map['content']??'',
       nickname: map['nickname']??'',
+      uid: map['uid']??'',
       sendDate: map['sendDate']??Timestamp(0, 0)
     );
   }
@@ -27,6 +30,7 @@ class MessageModel {
     Map<String,dynamic> data = {};
     data['content']=content;
     data['nickname']=nickname;
+    data['uid']=uid;
     data['sendDate']=sendDate;
     return data;
   }
