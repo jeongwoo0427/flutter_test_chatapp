@@ -41,13 +41,16 @@ class _ProfileScreenState extends State<ProfileScreen> with DialogMixin{
               mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                if(!isAnony)
                 Container(width: 20,),
                 SizedBox(width: 10,),
                 Text(
-                  userState.getUser().displayName??'user',
+                  isAnony?'익명 사용자':userState.getUser().displayName??'사용자',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(width: 10,),
+
+                if(!isAnony)
                 GestureDetector(
                   onTap: _onTapEditNickname,
                   child: Icon(Icons.edit),
@@ -56,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> with DialogMixin{
             ),
 
             SizedBox(height: 30,),
-            MaterialButton(onPressed: _onPressedLonginButton,child: Text(isAnony?'로그인':'로그아웃'),)
+            MaterialButton(onPressed: _onPressedLonginButton,child: Text(isAnony?'로그인':'로그아웃'),height: 60,)
           ],
         ));
   }
@@ -73,13 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> with DialogMixin{
     }
   }
 
-  void _onPressedLonginButton(){
-    bool isAnony = Provider.of<UserState>(context,listen: false).getUser().isAnonymous;
+  void _onPressedLonginButton() async{
+    UserState userState = Provider.of<UserState>(context,listen: false);
 
-    if(isAnony){
+    if(userState.getUser().isAnonymous){
       Navigator.pushNamed(context, Routes.login);
     }else{
-
+      await userState.signOut();
     }
   }
 }

@@ -34,10 +34,10 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: _onPressedNewRoom,
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   child: Icon(Icons.add),
+      //   onPressed: _onPressedNewRoom,
+      // ),
       appBar: AppBar(
         centerTitle: true,
         leading: Container(),
@@ -90,17 +90,23 @@ class _ChatroomListScreenState extends State<ChatroomListScreen>
     List<Widget> widgets = [];
     chatrooms.forEach((element) {
       widgets.add(FrontContainerWidget(
+        height: 80,
           onTap: (){_onPressedRoomItem(element);},
           child: Padding(
-            padding: EdgeInsets.only(left: 15, top: 15, bottom: 15, right: 40),
+            padding: EdgeInsets.symmetric(horizontal: 15),
             child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [element.password!=''?Icon(Icons.lock,size: 16,):Container(), Text(element.name)],
               ),
+
+                if(element.password == '')
               SizedBox(height: 10,),
+              if(element.password == '')
               Text(element.recentMessage,style: TextStyle(color: Colors.grey),)
             ],)
           )));

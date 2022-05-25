@@ -31,8 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
       UserState userState = Provider.of<UserState>(context,listen: false);
 
       await userState.prepareUser();
-      User user = userState.getUser();
-      log('isAnony=${user.isAnonymous.toString()} email=${user.email} uid=${user.uid} displayName=${user.displayName}');
+      //User user = userState.getUser();
+      //log('isAnony=${user.isAnonymous} email=${user.email} uid=${user.uid} displayName=${user.displayName}');
 
       Navigator.of(context, rootNavigator: true)
           .pushReplacementNamed(Routes.chatroomList);

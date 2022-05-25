@@ -40,6 +40,13 @@ class UserState extends ChangeNotifier{
       return e.toString();
     }
   }
+
+  Future<void> signOut() async{
+    await _auth.signOut();
+    await _auth.signInAnonymously();
+    notifyListeners();
+
+  }
   
   Future<String> signInWithEmail(String email, String password) async{
     try {

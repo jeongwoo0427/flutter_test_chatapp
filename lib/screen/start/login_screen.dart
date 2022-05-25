@@ -84,13 +84,14 @@ class _LoginScreenState extends State<LoginScreen> with ValidatorMinxin ,DialogM
 
 
     if(result == 'success'){
-      showAlertDialog(context, title: '로그인 성공', content:'정상적으로 로그인 되었습니다.');
+      await showAlertDialog(context, title: '로그인 성공', content:'정상적으로 로그인 되었습니다.');
+      Navigator.pop(context);
     }else{
       showAlertDialog(context, title: '로그인 오류', content: result.toString());
     }
   }
   void _onTapRegisterButton() async{
-    final result = await Navigator.of(context).pushNamed(Routes.register);
+    final result = await Navigator.of(context).pushReplacementNamed(Routes.register);
 
     if(result == true){
       Navigator.pop(context);
